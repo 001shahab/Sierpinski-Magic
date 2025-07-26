@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sierpinski Fractals - Interactive Explorer</title>
+    <title>Fun with Math - Interactive Mathematical Beauty</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -32,7 +32,7 @@
         }
         
         .logo {
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
             opacity: 0;
             animation: fadeIn 1s ease-out forwards;
         }
@@ -43,17 +43,22 @@
         }
         
         h1 {
-            font-size: 3rem;
-            font-weight: 300;
-            letter-spacing: -0.02em;
+            font-size: 4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
             margin-bottom: 1rem;
             opacity: 0;
             animation: fadeIn 1s ease-out 0.2s forwards;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
         
         .subtitle {
-            font-size: 1.25rem;
-            color: #6e6e73;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
             margin-bottom: 3rem;
             opacity: 0;
             animation: fadeIn 1s ease-out 0.4s forwards;
@@ -68,23 +73,40 @@
         }
         
         .shape-option {
-            background: white;
-            border-radius: 20px;
-            padding: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 2.5rem 2rem;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             position: relative;
             overflow: hidden;
         }
         
+        .shape-option::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            transform: scale(0);
+            transition: transform 0.6s ease;
+        }
+        
+        .shape-option:hover::before {
+            transform: scale(1);
+        }
+        
         .shape-option:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
         
         .shape-option.selected {
-            background: #007aff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             transform: scale(1.05);
         }
@@ -94,44 +116,58 @@
         }
         
         .shape-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 1rem;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1.5rem;
             display: block;
             transition: all 0.3s ease;
         }
         
         .shape-name {
             text-align: center;
-            font-size: 1.1rem;
-            font-weight: 500;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .math-formula {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        
+        .shape-option.selected .math-formula {
+            color: rgba(255, 255, 255, 0.8);
         }
         
         .generate-button {
-            background: #007aff;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
             border: none;
             border-radius: 100px;
-            padding: 1rem 3rem;
-            font-size: 1.1rem;
-            font-weight: 500;
+            padding: 1.2rem 4rem;
+            font-size: 1.2rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0;
             animation: fadeIn 1s ease-out 0.8s forwards;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.3);
         }
         
         .generate-button:hover:not(:disabled) {
-            background: #0051d5;
             transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(245, 87, 108, 0.4);
         }
         
         .generate-button:disabled {
             background: #c7c7cc;
             cursor: not-allowed;
             transform: scale(1);
+            box-shadow: none;
         }
         
         .progress-container {
@@ -147,31 +183,33 @@
         }
         
         .progress-bar {
-            height: 6px;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 3px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
             overflow: hidden;
             margin-bottom: 1rem;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .progress-fill {
             height: 100%;
-            background: #007aff;
-            border-radius: 3px;
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 4px;
             transition: width 0.3s ease;
             width: 0%;
+            box-shadow: 0 0 10px rgba(245, 87, 108, 0.5);
         }
         
         .progress-text {
             text-align: center;
-            font-size: 1rem;
-            color: #6e6e73;
+            font-size: 1.1rem;
+            color: white;
             margin-bottom: 2rem;
         }
         
         .iteration-counter {
-            font-weight: 600;
-            color: #007aff;
+            font-weight: 700;
+            font-size: 1.3rem;
         }
         
         .result-container {
@@ -189,23 +227,27 @@
             max-width: 600px;
             width: 100%;
             height: auto;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             background: white;
             padding: 2rem;
             transition: transform 0.3s ease;
         }
         
         .fractal-image.pulse {
-            animation: pulse 2s infinite;
+            animation: glow 2s ease-in-out infinite;
         }
         
         .description {
             margin-top: 2rem;
             max-width: 600px;
             text-align: left;
-            line-height: 1.6;
-            color: #6e6e73;
+            line-height: 1.8;
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 15px;
             opacity: 0;
             transition: opacity 0.5s ease;
         }
@@ -215,20 +257,21 @@
         }
         
         .completion-message {
-            font-size: 1.5rem;
+            font-size: 2rem;
             font-weight: 300;
-            color: #007aff;
+            color: white;
             margin-top: 2rem;
             opacity: 0;
             animation: fadeIn 1s ease-out forwards;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
         }
         
         footer {
             padding: 2rem;
             text-align: center;
-            color: #6e6e73;
+            color: rgba(255, 255, 255, 0.8);
             font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(10px);
         }
         
@@ -243,12 +286,12 @@
             }
         }
         
-        @keyframes pulse {
+        @keyframes glow {
             0%, 100% {
-                transform: scale(1);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             }
             50% {
-                transform: scale(1.02);
+                box-shadow: 0 20px 60px rgba(245, 87, 108, 0.4);
             }
         }
         
@@ -259,11 +302,16 @@
             }
             
             h1 {
-                font-size: 2rem;
+                font-size: 2.5rem;
             }
             
             .subtitle {
-                font-size: 1rem;
+                font-size: 1.1rem;
+            }
+            
+            .shape-icon {
+                width: 80px;
+                height: 80px;
             }
         }
     </style>
@@ -274,34 +322,45 @@
             <img src="/static/img/logo.png" alt="3S Holding Logo">
         </div>
         
-        <h1>Sierpinski Fractals</h1>
-        <p class="subtitle">Watch the beauty of mathematical recursion unfold</p>
+        <h1>Fun with Math</h1>
+        <p class="subtitle">Discover the beauty hidden in numbers</p>
         
         <div class="shape-selector">
             <div class="shape-option" data-shape="triangle">
                 <svg class="shape-icon" viewBox="0 0 100 100">
-                    <polygon points="50,10 90,90 10,90" fill="none" stroke="#007aff" stroke-width="2"/>
+                    <polygon points="50,10 90,90 10,90" fill="none" stroke="#667eea" stroke-width="2"/>
+                    <polygon points="50,50 70,90 30,90" fill="none" stroke="#667eea" stroke-width="1.5" opacity="0.5"/>
+                    <polygon points="30,50 50,90 10,90" fill="none" stroke="#667eea" stroke-width="1" opacity="0.3"/>
+                    <polygon points="70,50 90,90 50,90" fill="none" stroke="#667eea" stroke-width="1" opacity="0.3"/>
                 </svg>
-                <div class="shape-name">Triangle</div>
+                <div class="shape-name">Sierpinski Triangle</div>
+                <div class="math-formula">Chaos Game Algorithm</div>
             </div>
             
-            <div class="shape-option" data-shape="square">
+            <div class="shape-option" data-shape="spiral">
                 <svg class="shape-icon" viewBox="0 0 100 100">
-                    <rect x="20" y="20" width="60" height="60" fill="none" stroke="#007aff" stroke-width="2"/>
+                    <path d="M50,50 Q60,50 60,40 Q60,30 40,30 Q20,30 20,50 Q20,80 50,80 Q90,80 90,40" 
+                          fill="none" stroke="#667eea" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="2" fill="#667eea"/>
                 </svg>
-                <div class="shape-name">Square</div>
+                <div class="shape-name">Fibonacci Spiral</div>
+                <div class="math-formula">φ = (1 + √5) / 2</div>
             </div>
             
-            <div class="shape-option" data-shape="circle">
+            <div class="shape-option" data-shape="dragon">
                 <svg class="shape-icon" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#007aff" stroke-width="2"/>
+                    <path d="M50,50 L60,50 L60,40 L50,40 L50,30 L40,30 L40,40 L30,40 L30,50 L40,50 L40,60 L50,60 L50,70 L60,70 L60,60 L70,60 L70,50 L70,40 L70,30 L60,30" 
+                          fill="none" stroke="#667eea" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M30,50 L30,60 L40,60" fill="none" stroke="#667eea" stroke-width="1.5" opacity="0.5"/>
+                    <path d="M60,40 L70,40" fill="none" stroke="#667eea" stroke-width="1.5" opacity="0.5"/>
                 </svg>
-                <div class="shape-name">Circle</div>
+                <div class="shape-name">Dragon Curve</div>
+                <div class="math-formula">L-System Magic</div>
             </div>
         </div>
         
         <button class="generate-button" id="generateBtn" disabled>
-            Select a Shape
+            Select a Mathematical Wonder
         </button>
         
         <div class="progress-container" id="progressContainer">
@@ -314,9 +373,9 @@
         </div>
         
         <div class="result-container" id="resultContainer">
-            <img class="fractal-image" id="fractalImage" alt="Sierpinski Fractal">
+            <img class="fractal-image" id="fractalImage" alt="Mathematical Beauty">
             <div class="completion-message" id="completionMessage" style="display: none;">
-                ✨ Reached 25,000 iterations! ✨
+                ✨ 25,000 iterations of pure mathematics! ✨
             </div>
             <div class="description" id="description"></div>
         </div>
@@ -342,9 +401,9 @@
         const completionMessage = document.getElementById('completionMessage');
         
         const descriptions = {
-            triangle: "The Sierpinski Triangle emerges from chaos. Each point moves halfway toward a randomly chosen vertex, creating order from randomness through 25,000 iterations.",
-            square: "A mesmerizing square fractal unfolds using an Iterated Function System. Watch as five transformations dance together, with colors revealing the hidden structure of mathematical beauty.",
-            circle: "A circular strange attractor comes to life! Based on De Jong equations with spiral motion, this creates flowing, organic patterns that hypnotize with their twilight gradient colors."
+            triangle: "The Sierpinski Triangle emerges from the chaos game—a mathematical miracle where randomness creates perfect order. Each dot represents a journey halfway to a randomly chosen vertex, and from this simple rule, infinite complexity blooms. Named after Polish mathematician Wacław Sierpiński, this fractal has captivated minds since 1915.",
+            spiral: "The Fibonacci Spiral dances with the golden ratio φ (phi), nature's favorite number. Watch as the spiral unfolds through perfectly proportioned squares, each sized according to the Fibonacci sequence. This mathematical poetry governs the growth of shells, galaxies, and countless natural phenomena.",
+            dragon: "The Dragon Curve is one of the most mesmerizing fractals in mathematics. Starting from a simple line, it unfolds through recursive 90-degree turns, creating a path that never crosses itself. As it grows, it reveals dragon-like shapes that tessellate perfectly, filling the plane with infinite complexity."
         };
         
         shapeOptions.forEach(option => {
@@ -353,7 +412,7 @@
                 option.classList.add('selected');
                 selectedShape = option.dataset.shape;
                 generateBtn.disabled = false;
-                generateBtn.textContent = 'Start Generation';
+                generateBtn.textContent = 'Begin Mathematical Journey';
             });
         });
         
@@ -362,7 +421,7 @@
             
             // Reset UI
             generateBtn.disabled = true;
-            generateBtn.textContent = 'Generating...';
+            generateBtn.textContent = 'Creating Beauty...';
             progressContainer.classList.add('show');
             resultContainer.classList.add('show');
             description.classList.remove('show');
@@ -410,7 +469,7 @@
                         if (progressData.complete) {
                             clearInterval(progressInterval);
                             generateBtn.disabled = false;
-                            generateBtn.textContent = 'Generate Again';
+                            generateBtn.textContent = 'Create Another Wonder';
                             fractalImage.classList.remove('pulse');
                             completionMessage.style.display = 'block';
                         }
