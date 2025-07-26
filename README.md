@@ -71,8 +71,8 @@ Following Steve Jobs' design principles, this application emphasizes:
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/fun-with-math.git
-cd fun-with-math
+git clone https://github.com/001shahab/Sierpinski-Magic.git
+cd Sierpinski-Magic
 ```
 
 2. **Create a virtual environment** (recommended)
@@ -225,14 +225,14 @@ This tool is perfect for:
 For academic use, please cite:
 ```
 Anbarjafari, S. (2025). Fun with Math: Interactive Mathematical Visualizations. 
-3S Holding OÜ. https://github.com/yourusername/fun-with-math
+3S Holding OÜ. https://github.com/001shahab/Sierpinski-Magic
 ```
 
 ## 📧 Contact
 
 **Prof. Shahab Anbarjafari**  
 3S Holding OÜ  
-Tallinn, Estonia
+Tartu, Estonia
 
 ---
 
