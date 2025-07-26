@@ -64,12 +64,66 @@
             animation: fadeIn 1s ease-out 0.4s forwards;
         }
         
+        /* Clean grid layout for 4 options */
         .shape-selector {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 2rem;
             margin-bottom: 3rem;
             opacity: 0;
             animation: fadeIn 1s ease-out 0.6s forwards;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .shape-option {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 3rem 2rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 220px;
+        }
+        
+        .shape-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .shape-option:hover::before {
+            opacity: 1;
+        }
+        
+        .shape-option:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(102, 126, 234, 0.3);
+        }
+        
+        .shape-option.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 20px 50px rgba(102, 126, 234, 0.4);
+        }
+        
+        .shape-option.selected::before {
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            opacity: 1;
         }
         
         .shape-option {
@@ -337,22 +391,34 @@
                 <div class="math-formula">Chaos Game Algorithm</div>
             </div>
             
-            <div class="shape-option" data-shape="spiral">
+            <div class="shape-option" data-shape="logarithmic">
                 <svg class="shape-icon" viewBox="0 0 100 100">
-                    <path d="M50,50 Q60,50 60,40 Q60,30 40,30 Q20,30 20,50 Q20,80 50,80 Q90,80 90,40" 
-                          fill="none" stroke="#667eea" stroke-width="2"/>
+                    <path d="M50,50 Q55,45 60,45 Q65,50 65,55 Q60,65 50,65 Q35,65 35,50 Q35,30 50,30 Q75,30 75,50 Q75,80 50,80" 
+                          fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round"/>
                     <circle cx="50" cy="50" r="2" fill="#667eea"/>
                 </svg>
-                <div class="shape-name">Fibonacci Spiral</div>
-                <div class="math-formula">φ = (1 + √5) / 2</div>
+                <div class="shape-name">Logarithmic Spiral</div>
+                <div class="math-formula">r = ae^(bθ)</div>
+            </div>
+            
+            <div class="shape-option" data-shape="rose">
+                <svg class="shape-icon" viewBox="0 0 100 100">
+                    <g transform="translate(50,50)">
+                        <path d="M0,0 Q-10,-10 0,-20 Q10,-10 0,0 Q10,10 20,0 Q10,-10 0,0 Q-10,10 -20,0 Q-10,-10 0,0 Q0,10 0,20 Q0,10 0,0 Q0,-10 -15,-15 Q-10,-10 0,0"
+                              fill="none" stroke="#667eea" stroke-width="2"/>
+                    </g>
+                    <circle cx="50" cy="50" r="3" fill="#667eea" opacity="0.5"/>
+                </svg>
+                <div class="shape-name">Rose Curve</div>
+                <div class="math-formula">r = a·cos(kθ)</div>
             </div>
             
             <div class="shape-option" data-shape="dragon">
                 <svg class="shape-icon" viewBox="0 0 100 100">
-                    <path d="M50,50 L60,50 L60,40 L50,40 L50,30 L40,30 L40,40 L30,40 L30,50 L40,50 L40,60 L50,60 L50,70 L60,70 L60,60 L70,60 L70,50 L70,40 L70,30 L60,30" 
+                    <path d="M30,70 L40,70 L40,60 L30,60 L30,50 L40,50 L40,40 L30,40 L30,30 L40,30 L40,20 L50,20 L50,30 L60,30 L60,20 L70,20 L70,30 L70,40 L60,40 L60,50 L70,50 L70,60 L60,60 L60,70 L70,70" 
                           fill="none" stroke="#667eea" stroke-width="2" stroke-linejoin="round"/>
-                    <path d="M30,50 L30,60 L40,60" fill="none" stroke="#667eea" stroke-width="1.5" opacity="0.5"/>
-                    <path d="M60,40 L70,40" fill="none" stroke="#667eea" stroke-width="1.5" opacity="0.5"/>
+                    <circle cx="35" cy="25" r="2" fill="#667eea" opacity="0.5"/>
+                    <circle cx="65" cy="65" r="2" fill="#667eea" opacity="0.5"/>
                 </svg>
                 <div class="shape-name">Dragon Curve</div>
                 <div class="math-formula">L-System Magic</div>
@@ -402,7 +468,8 @@
         
         const descriptions = {
             triangle: "The Sierpinski Triangle emerges from the chaos game—a mathematical miracle where randomness creates perfect order. Each dot represents a journey halfway to a randomly chosen vertex, and from this simple rule, infinite complexity blooms. Named after Polish mathematician Wacław Sierpiński, this fractal has captivated minds since 1915.",
-            spiral: "The Fibonacci Spiral dances with the golden ratio φ (phi), nature's favorite number. Watch as the spiral unfolds through perfectly proportioned squares, each sized according to the Fibonacci sequence. This mathematical poetry governs the growth of shells, galaxies, and countless natural phenomena.",
+            logarithmic: "The Logarithmic Spiral appears throughout nature—from nautilus shells to galaxies, hurricanes to flower petals. Its unique property: it maintains its shape while growing exponentially. As you zoom in or out, the spiral looks exactly the same, demonstrating perfect self-similarity across all scales.",
+            rose: "Rose Curves create stunning flower-like patterns through polar mathematics. The number of petals depends on the ratio k—when k = n/d, you get n petals if n is odd, or 2n petals if n is even. These curves demonstrate how simple trigonometric functions can create breathtaking natural beauty.",
             dragon: "The Dragon Curve is one of the most mesmerizing fractals in mathematics. Starting from a simple line, it unfolds through recursive 90-degree turns, creating a path that never crosses itself. As it grows, it reveals dragon-like shapes that tessellate perfectly, filling the plane with infinite complexity."
         };
         

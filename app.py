@@ -70,119 +70,212 @@ def generate_sierpinski_triangle_progressive(shape_id, max_iterations=25000):
             
             time.sleep(0.01)  # Small delay for smooth animation
 
-def generate_fibonacci_spiral_progressive(shape_id, max_iterations=25000):
-    """Generate a continuously growing Fibonacci Spiral"""
+def generate_logarithmic_spiral_progressive(shape_id, max_iterations=25000):
+    """Generate a beautiful Logarithmic Spiral in polar coordinates"""
     points = []
     
-    # Fibonacci numbers - generate more for larger spiral
-    fib = [1, 1]
-    while len(fib) < 25:  # More squares for bigger spiral
-        fib.append(fib[-1] + fib[-2])
-    
-    # Golden ratio
-    phi = (1 + np.sqrt(5)) / 2
+    # Parameters for logarithmic spiral
+    a = 0.1  # Initial radius
+    b = 0.2  # Growth rate
     
     for i in range(max_iterations):
-        # Create spiral that grows continuously
-        # Map iterations to spiral growth (0 to ~20 full rotations)
-        theta = (i / max_iterations) * 20 * np.pi
+        # Angle grows linearly
+        theta = i * 0.05
         
-        # Logarithmic spiral equation with golden ratio
-        r = 0.01 * np.exp(theta * np.log(phi) / (2 * np.pi))
+        # Logarithmic spiral: r = a * e^(b * theta)
+        r = a * np.exp(b * theta)
         
+        # Convert to Cartesian
         x = r * np.cos(theta)
         y = r * np.sin(theta)
-        points.append([x, y])
+        points.append([x, y, theta, r])
         
         # Update visualization
         if i % 200 == 0 or i == max_iterations - 1:
-            fig, ax = plt.subplots(figsize=(8, 8), facecolor='none')
+            fig, ax = plt.subplots(figsize=(8, 8), facecolor='none', subplot_kw=dict(projection='polar'))
             ax.set_facecolor('none')
             
-            # Calculate current spiral extent
-            current_max_r = 0.01 * np.exp(theta * np.log(phi) / (2 * np.pi))
-            
-            # Determine how many Fibonacci squares to show based on spiral size
-            # This ensures we keep adding squares as the spiral grows
-            total_fib_size = 0
-            squares_to_show = 0
-            for j, f in enumerate(fib):
-                total_fib_size += f * 0.005
-                if total_fib_size < current_max_r * 2:
-                    squares_to_show = j + 1
-                else:
-                    break
-            
-            squares_to_show = max(4, min(squares_to_show, 20))
-            
-            # Scale factor to fit current view
-            scale = 0.005 * (1 + i / 5000)  # Gradually increase scale
-            
-            # Draw Fibonacci squares
-            x_pos, y_pos = 0, 0
-            directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
-            
-            # Track bounds
-            min_x, max_x = 0, 0
-            min_y, max_y = 0, 0
-            
-            for j in range(min(squares_to_show, len(fib))):
-                size = fib[j] * scale
-                
-                # Draw square
-                rect = patches.Rectangle((x_pos, y_pos), size, size,
-                                       fill=False, edgecolor='goldenrod', 
-                                       linewidth=2, alpha=0.7)
-                ax.add_patch(rect)
-                
-                # Update bounds
-                min_x = min(min_x, x_pos, x_pos + size)
-                max_x = max(max_x, x_pos, x_pos + size)
-                min_y = min(min_y, y_pos, y_pos + size)
-                max_y = max(max_y, y_pos, y_pos + size)
-                
-                # Add labels for smaller squares only
-                if j < 6:
-                    ax.text(x_pos + size/2, y_pos + size/2, str(fib[j]),
-                           ha='center', va='center', fontsize=8,
-                           color='darkgoldenrod', alpha=0.6)
-                
-                # Move to next position
-                if j % 4 == 0:  # right
-                    x_pos += size
-                elif j % 4 == 1:  # up
-                    x_pos -= fib[j-1] * scale if j > 0 else 0
-                    y_pos += size
-                elif j % 4 == 2:  # left
-                    x_pos -= size
-                    y_pos -= fib[j-1] * scale if j > 0 else 0
-                elif j % 4 == 3:  # down
-                    y_pos -= size
-            
-            # Draw the spiral
             if len(points) > 1:
                 points_array = np.array(points[:i+1])
+                thetas = points_array[:, 2]
+                rs = points_array[:, 3]
                 
-                # Draw spiral with gradient
+                # Create gradient effect
                 segments = len(points_array) - 1
-                # Only draw last portion if too many points
-                start_idx = max(0, segments - 5000) if segments > 5000 else 0
+                for j in range(segments):
+                    color = plt.cm.twilight(j / segments)
+                    ax.plot(thetas[j:j+2], rs[j:j+2], color=color, linewidth=2, alpha=0.8)
                 
-                for k in range(start_idx, segments):
-                    progress = (k - start_idx) / (segments - start_idx)
-                    color = plt.cm.plasma(progress)
-                    alpha = 0.3 + 0.7 * progress
-                    ax.plot(points_array[k:k+2, 0], points_array[k:k+2, 1],
-                           color=color, linewidth=2, alpha=alpha)
+                # Add glow effect for recent points
+                if len(points_array) > 50:
+                    ax.plot(thetas[-50:], rs[-50:], color='cyan', linewidth=4, alpha=0.3)
             
-            # Update view to show everything with margin
+            # Polar grid styling
+            ax.grid(True, alpha=0.3)
+            ax.set_theta_zero_location('N')
+            ax.set_theta_direction(-1)
+            
+            # Dynamic radius limit
             if len(points) > 0:
-                margin = 0.1 * max(max_x - min_x, max_y - min_y)
-                ax.set_xlim(min_x - margin, max_x + margin)
-                ax.set_ylim(min_y - margin, max_y + margin)
+                max_r = max([p[3] for p in points]) * 1.1
+                ax.set_ylim(0, max_r)
             
-            ax.set_aspect('equal')
-            ax.axis('off')
+            # Remove radius labels for cleaner look
+            ax.set_yticklabels([])
+            
+            # Save to buffer
+            buffer = BytesIO()
+            plt.savefig(buffer, format='png', bbox_inches='tight', 
+                        transparent=True, dpi=150, pad_inches=0)
+            buffer.seek(0)
+            plt.close()
+            
+            generation_progress[shape_id] = {
+                'iteration': i + 1,
+                'max_iterations': max_iterations,
+                'image': base64.b64encode(buffer.getvalue()).decode(),
+                'complete': i == max_iterations - 1
+            }
+            
+            time.sleep(0.01)
+
+def generate_archimedean_spiral_progressive(shape_id, max_iterations=25000):
+    """Generate an Archimedean Spiral with evenly spaced arms"""
+    points = []
+    
+    # Parameter for Archimedean spiral
+    a = 0.5  # Controls spacing between arms
+    
+    for i in range(max_iterations):
+        # Angle grows to create multiple rotations
+        theta = i * 0.02
+        
+        # Archimedean spiral: r = a * theta
+        r = a * theta
+        
+        # Store polar and Cartesian coordinates
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+        points.append([x, y, theta, r])
+        
+        # Update visualization
+        if i % 200 == 0 or i == max_iterations - 1:
+            fig, ax = plt.subplots(figsize=(8, 8), facecolor='none', subplot_kw=dict(projection='polar'))
+            ax.set_facecolor('none')
+            
+            if len(points) > 1:
+                points_array = np.array(points[:i+1])
+                thetas = points_array[:, 2]
+                rs = points_array[:, 3]
+                
+                # Create rainbow gradient
+                segments = len(points_array) - 1
+                for j in range(segments):
+                    color = plt.cm.rainbow(j / segments)
+                    ax.plot(thetas[j:j+2], rs[j:j+2], color=color, linewidth=2, alpha=0.8)
+                
+                # Add sparkle effect
+                if len(points_array) > 100:
+                    # Add dots at regular intervals for sparkle
+                    sparkle_indices = range(0, len(points_array), 50)
+                    ax.scatter(thetas[sparkle_indices], rs[sparkle_indices], 
+                             color='white', s=20, alpha=0.8, zorder=10)
+            
+            # Polar grid styling
+            ax.grid(True, alpha=0.3)
+            ax.set_theta_zero_location('N')
+            ax.set_theta_direction(-1)
+            
+            # Dynamic radius limit
+            if len(points) > 0:
+                max_r = max([p[3] for p in points]) * 1.1
+                ax.set_ylim(0, max_r)
+            
+            ax.set_yticklabels([])
+            
+            # Save to buffer
+            buffer = BytesIO()
+            plt.savefig(buffer, format='png', bbox_inches='tight', 
+                        transparent=True, dpi=150, pad_inches=0)
+            buffer.seek(0)
+            plt.close()
+            
+            generation_progress[shape_id] = {
+                'iteration': i + 1,
+                'max_iterations': max_iterations,
+                'image': base64.b64encode(buffer.getvalue()).decode(),
+                'complete': i == max_iterations - 1
+            }
+            
+            time.sleep(0.01)
+
+def generate_rose_curve_progressive(shape_id, max_iterations=25000):
+    """Generate beautiful Rose Curves (rhodonea curves)"""
+    points = []
+    
+    # Parameters for rose curve
+    # Using k = 5/3 for a beautiful 5-petaled rose
+    n = 5  # numerator
+    d = 3  # denominator
+    k = n / d
+    a = 5  # amplitude
+    
+    for i in range(max_iterations):
+        # Map iterations to full pattern (need 2π*d for complete pattern when k is rational)
+        theta = (i / max_iterations) * 2 * np.pi * d
+        
+        # Rose curve: r = a * cos(k * theta)
+        r = a * np.cos(k * theta)
+        
+        # Store both positive and reflected points for full pattern
+        points.append([theta, abs(r)])
+        
+        # Update visualization
+        if i % 200 == 0 or i == max_iterations - 1:
+            fig, ax = plt.subplots(figsize=(8, 8), facecolor='none', subplot_kw=dict(projection='polar'))
+            ax.set_facecolor('none')
+            
+            if len(points) > 1:
+                points_array = np.array(points[:i+1])
+                thetas = points_array[:, 0]
+                rs = points_array[:, 1]
+                
+                # Create petal gradient effect
+                segments = len(points_array) - 1
+                for j in range(segments):
+                    # Color based on radius for petal effect
+                    color_val = rs[j] / a
+                    color = plt.cm.RdPu(color_val)
+                    ax.plot(thetas[j:j+2], rs[j:j+2], color=color, linewidth=3, alpha=0.9)
+                
+                # Add symmetric reflection for complete rose
+                ax.plot(thetas, rs, color='none')  # Invisible line for proper scaling
+                
+                # Draw the negative part too
+                for j in range(segments):
+                    r_neg = a * np.cos(k * thetas[j])
+                    if r_neg < 0:
+                        color_val = abs(r_neg) / a
+                        color = plt.cm.RdPu(color_val)
+                        ax.plot([thetas[j], thetas[j]], [0, abs(r_neg)], 
+                               color=color, linewidth=3, alpha=0.9)
+                
+                # Add center glow
+                ax.scatter([0], [0], color='pink', s=100, alpha=0.5, zorder=10)
+            
+            # Polar grid styling
+            ax.grid(True, alpha=0.2, linestyle='--')
+            ax.set_theta_zero_location('N')
+            ax.set_theta_direction(-1)
+            
+            # Fixed radius for rose curves
+            ax.set_ylim(0, a * 1.2)
+            ax.set_yticklabels([])
+            
+            # Add title showing the rose type
+            if i == max_iterations - 1:
+                ax.text(0, a * 1.15, f'{n}-petaled rose', ha='center', 
+                       transform=ax.transData, fontsize=12, alpha=0.7)
             
             # Save to buffer
             buffer = BytesIO()
@@ -333,8 +426,10 @@ def generate(shape):
     # Start generation in background thread
     if shape == 'triangle':
         thread = Thread(target=generate_sierpinski_triangle_progressive, args=(shape_id,))
-    elif shape == 'spiral':
-        thread = Thread(target=generate_fibonacci_spiral_progressive, args=(shape_id,))
+    elif shape == 'logarithmic':
+        thread = Thread(target=generate_logarithmic_spiral_progressive, args=(shape_id,))
+    elif shape == 'rose':
+        thread = Thread(target=generate_rose_curve_progressive, args=(shape_id,))
     elif shape == 'dragon':
         thread = Thread(target=generate_dragon_curve_progressive, args=(shape_id,))
     else:
