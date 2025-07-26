@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sierpinski Fractals - Interactive Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #1d1d1f;
+        }
+        
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .logo {
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+        
+        .logo img {
+            height: 60px;
+            width: auto;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            font-weight: 300;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeIn 1s ease-out 0.2s forwards;
+        }
+        
+        .subtitle {
+            font-size: 1.25rem;
+            color: #6e6e73;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeIn 1s ease-out 0.4s forwards;
+        }
+        
+        .shape-selector {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeIn 1s ease-out 0.6s forwards;
+        }
+        
+        .shape-option {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .shape-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .shape-option.selected {
+            background: #007aff;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .shape-option.selected .shape-icon {
+            filter: brightness(0) invert(1);
+        }
+        
+        .shape-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .shape-name {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .generate-button {
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 100px;
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            animation: fadeIn 1s ease-out 0.8s forwards;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .generate-button:hover:not(:disabled) {
+            background: #0051d5;
+            transform: scale(1.05);
+        }
+        
+        .generate-button:disabled {
+            background: #c7c7cc;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+        
+        .progress-container {
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 600px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .progress-container.show {
+            opacity: 1;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #007aff;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-size: 1rem;
+            color: #6e6e73;
+            margin-bottom: 2rem;
+        }
+        
+        .iteration-counter {
+            font-weight: 600;
+            color: #007aff;
+        }
+        
+        .result-container {
+            margin-top: 1rem;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            text-align: center;
+        }
+        
+        .result-container.show {
+            opacity: 1;
+        }
+        
+        .fractal-image {
+            max-width: 600px;
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            background: white;
+            padding: 2rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .fractal-image.pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        .description {
+            margin-top: 2rem;
+            max-width: 600px;
+            text-align: left;
+            line-height: 1.6;
+            color: #6e6e73;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .description.show {
+            opacity: 1;
+        }
+        
+        .completion-message {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #007aff;
+            margin-top: 2rem;
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+        
+        footer {
+            padding: 2rem;
+            text-align: center;
+            color: #6e6e73;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .shape-selector {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="/static/img/logo.png" alt="3S Holding Logo">
+        </div>
+        
+        <h1>Sierpinski Fractals</h1>
+        <p class="subtitle">Watch the beauty of mathematical recursion unfold</p>
+        
+        <div class="shape-selector">
+            <div class="shape-option" data-shape="triangle">
+                <svg class="shape-icon" viewBox="0 0 100 100">
+                    <polygon points="50,10 90,90 10,90" fill="none" stroke="#007aff" stroke-width="2"/>
+                </svg>
+                <div class="shape-name">Triangle</div>
+            </div>
+            
+            <div class="shape-option" data-shape="square">
+                <svg class="shape-icon" viewBox="0 0 100 100">
+                    <rect x="20" y="20" width="60" height="60" fill="none" stroke="#007aff" stroke-width="2"/>
+                </svg>
+                <div class="shape-name">Square</div>
+            </div>
+            
+            <div class="shape-option" data-shape="circle">
+                <svg class="shape-icon" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#007aff" stroke-width="2"/>
+                </svg>
+                <div class="shape-name">Circle</div>
+            </div>
+        </div>
+        
+        <button class="generate-button" id="generateBtn" disabled>
+            Select a Shape
+        </button>
+        
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text">
+                Iteration: <span class="iteration-counter" id="iterationCounter">0</span> / 25,000
+            </div>
+        </div>
+        
+        <div class="result-container" id="resultContainer">
+            <img class="fractal-image" id="fractalImage" alt="Sierpinski Fractal">
+            <div class="completion-message" id="completionMessage" style="display: none;">
+                ✨ Reached 25,000 iterations! ✨
+            </div>
+            <div class="description" id="description"></div>
+        </div>
+    </div>
+    
+    <footer>
+        &copy; 2025 3S Holding OÜ - Design and Developed by Prof. Shahab Anbarjafari
+    </footer>
+    
+    <script>
+        let selectedShape = null;
+        let currentShapeId = null;
+        let progressInterval = null;
+        
+        const shapeOptions = document.querySelectorAll('.shape-option');
+        const generateBtn = document.getElementById('generateBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const iterationCounter = document.getElementById('iterationCounter');
+        const resultContainer = document.getElementById('resultContainer');
+        const fractalImage = document.getElementById('fractalImage');
+        const description = document.getElementById('description');
+        const completionMessage = document.getElementById('completionMessage');
+        
+        const descriptions = {
+            triangle: "The Sierpinski Triangle emerges from chaos. Each point moves halfway toward a randomly chosen vertex, creating order from randomness through 25,000 iterations.",
+            square: "A mesmerizing square fractal unfolds using an Iterated Function System. Watch as five transformations dance together, with colors revealing the hidden structure of mathematical beauty.",
+            circle: "A circular strange attractor comes to life! Based on De Jong equations with spiral motion, this creates flowing, organic patterns that hypnotize with their twilight gradient colors."
+        };
+        
+        shapeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                shapeOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedShape = option.dataset.shape;
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Start Generation';
+            });
+        });
+        
+        generateBtn.addEventListener('click', async () => {
+            if (!selectedShape) return;
+            
+            // Reset UI
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generating...';
+            progressContainer.classList.add('show');
+            resultContainer.classList.add('show');
+            description.classList.remove('show');
+            completionMessage.style.display = 'none';
+            fractalImage.classList.add('pulse');
+            progressFill.style.width = '0%';
+            iterationCounter.textContent = '0';
+            
+            // Start generation
+            try {
+                const response = await fetch(`/generate/${selectedShape}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                currentShapeId = data.shape_id;
+                
+                // Set description
+                description.textContent = descriptions[selectedShape];
+                setTimeout(() => description.classList.add('show'), 500);
+                
+                // Start polling for progress
+                progressInterval = setInterval(async () => {
+                    try {
+                        const progressResponse = await fetch(`/progress/${currentShapeId}`);
+                        const progressData = await progressResponse.json();
+                        
+                        if (progressData.error) {
+                            clearInterval(progressInterval);
+                            return;
+                        }
+                        
+                        // Update progress
+                        progressFill.style.width = `${progressData.percentage}%`;
+                        iterationCounter.textContent = progressData.iteration.toLocaleString();
+                        
+                        // Update image
+                        if (progressData.image) {
+                            fractalImage.src = progressData.image;
+                        }
+                        
+                        // Check if complete
+                        if (progressData.complete) {
+                            clearInterval(progressInterval);
+                            generateBtn.disabled = false;
+                            generateBtn.textContent = 'Generate Again';
+                            fractalImage.classList.remove('pulse');
+                            completionMessage.style.display = 'block';
+                        }
+                    } catch (error) {
+                        console.error('Progress error:', error);
+                    }
+                }, 100); // Update every 100ms for smooth animation
+                
+            } catch (error) {
+                alert('Error generating fractal: ' + error.message);
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Try Again';
+            }
+        });
+    </script>
+</body>
+</html>
